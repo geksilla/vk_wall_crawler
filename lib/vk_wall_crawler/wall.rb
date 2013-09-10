@@ -1,8 +1,9 @@
 module VkWallCrawler
   module Wall
-    attr_accessor :client, :total_pages, :data
 
     class << self
+      attr_accessor :data, :client
+
       def fetch(owner_id, break_limit = 0)
         owner_id = owner_id.to_id if owner_id.index(/http|vk.com/)
         @client = VkontakteApi::Client.new
@@ -21,11 +22,6 @@ module VkWallCrawler
         end
         @data
       end
-
-      def data
-        @data
-      end
-
     end
 
   end

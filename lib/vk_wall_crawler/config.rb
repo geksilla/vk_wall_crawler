@@ -1,7 +1,7 @@
 module VkWallCrawler
   module Configuration
 
-    OPTIONS = [:access_token]
+    OPTIONS = [:access_token, :faraday_config]
     attr_accessor *OPTIONS
 
     def configure

@@ -1,28 +1,56 @@
 module VkWallCrawler
   module Wall
+    extend Adapter
+    extend Utils
 
     class << self
       attr_accessor :data, :client
 
-      def fetch(owner_id, break_limit = 0)
-        owner_id = owner_id.to_id if owner_id.index(/http|vk.com/)
+      def default
+        { limit: 0, count: 100, page: nil }
+      end
+
+      def fetch(owner_id, options = {}, &block)
+        @options = default.merge options
         @client = VkontakteApi::Client.new
         @data = []
-        count = 100
-        total_pages = (@client.wall.get(owner_id: owner_id.to_i, count: 1).first.to_f/count).ceil
-        total_pages.times do |step|
-          @wall = @client.wall.get(owner_id: owner_id.to_i, count: count, offset: step*count)
-          @wall.each_with_index do |post, index|
-            next if index == 0
-            break if post.date < break_limit
-            hash = {}
-            yield(hash, post) if block_given?
-            @data.push hash
-          end
+        @block = block
+        owner_id = get_id(owner_id) if owner_id.index(/http|vk.com/)
+        @owner_id = owner_id
+        if options[:page].nil?
+          looped
+        else
+          get_page options[:page]
         end
         @data
       end
-    end
 
+      def looped
+        count = @options[:count]
+        total_pages = (@client.wall.get(owner_id: @owner_id.to_i, count: 1).first.to_f/count).ceil
+        total_pages.times do |step|
+          wall = @client.wall.get(owner_id: @owner_id.to_i, count: count, offset: step*count)
+          process wall
+        end
+      end
+
+      def get_page(page)
+        wall = @client.wall.get(owner_id: @owner_id.to_i, count: @options[:count], offset: @options[:count]*(@options[:page] - 1))
+        process wall
+      end
+
+      def process(wall)
+        wall.each_with_index do |post, index|
+          next if index == 0
+          break if post.date < @options[:limit]
+          if @block
+            @data << @block.call(post)
+          else
+            @data << post
+          end
+        end
+      end
+
+    end
   end
 end

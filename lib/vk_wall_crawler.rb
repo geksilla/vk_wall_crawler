@@ -6,7 +6,6 @@ require "vk_wall_crawler/adapter"
 require "vk_wall_crawler/utils"
 require "vk_wall_crawler/wall"
 require "vk_wall_crawler/config"
-require "pry"
 
 module VkWallCrawler
   extend Configuration

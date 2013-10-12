@@ -15,7 +15,7 @@ module VkWallCrawler
         @client = VkontakteApi::Client.new
         @data = []
         @block = block
-        owner_id = get_id(owner_id) if owner_id.index(/http|vk.com/)
+        owner_id = get_id(owner_id) if owner_id.index(/http|vk.com|https/)
         @owner_id = owner_id
         if options[:page].nil?
           looped

@@ -18,6 +18,7 @@ module VkWallCrawler
         owner_id = get_id(owner_id) if owner_id.index(/http|vk.com|https/)
         @owner_id = owner_id
         if options[:page].nil?
+          @end = false
           looped
         else
           get_page options[:page]
@@ -29,6 +30,7 @@ module VkWallCrawler
         count = @options[:count]
         total_pages = (@client.wall.get(owner_id: @owner_id.to_i, count: 1).first.to_f/count).ceil
         total_pages.times do |step|
+          break if @end
           wall = @client.wall.get(owner_id: @owner_id.to_i, count: count, offset: step*count)
           process wall
         end
@@ -42,6 +44,7 @@ module VkWallCrawler
       def process(wall)
         wall.each_with_index do |post, index|
           next if index == 0
+          @end = true if post.date < @options[:limit]
           break if post.date < @options[:limit]
           if @block
             @data << @block.call(post)
